@@ -4,6 +4,8 @@
 
 *Just 1 Int 7 Toggles* is an Unity Editor tool that uses just 1 Expression Parameter to create a menu with 7 Toggles.
 
+![](https://github.com/hai-vr/Just1Int7Toggles/raw/z-res-pictures/Documentation/illustration-parameter-menu.png)
+
 This tool is a **proof of concept** to showcase complex animator behaviors.
 
 Avatars have a maximum 16 Expression Parameters, synchronized over the network.
@@ -16,6 +18,8 @@ As a caveat, this reduces the number of available Expression Parameters for othe
 These toggles are synced.**
 
 This comes at a cost of animator complexity, and a lack of indication on the menu showing that an item is on or off.
+
+![](https://github.com/hai-vr/Just1Int7Toggles/raw/z-res-pictures/Documentation/illustration-animator.png)
 
 ## How to use
 
@@ -35,11 +39,16 @@ If you wish to have multiple sets of face expressions, add additional *Combo Ges
       If animations are blocked by safety settings, *Default state* will be ignored.
 - Press *Generate* to generate the layers.
 
+![](https://github.com/hai-vr/Just1Int7Toggles/raw/z-res-pictures/Documentation/inspector-compiler.png)
+
 Note that adding items is not mandatory. You can use parameters to control your own animator layers, see [Advanced: Animator parameters](#advanced-animator-parameters).
 
 ### Configuring the avatar
 
 - In your avatar's Expression Parameters, add `J1I7T_A_Sync` as an *Int*.
+
+![](https://github.com/hai-vr/Just1Int7Toggles/raw/z-res-pictures/Documentation/inspector-parameters.png)
+
 - An example Action menu is available at `Assets/Hai/Just1Int7Toggles/Toggles_1-7.asset`.
 - An example Parameters is available at `Assets/Hai/Just1Int7Toggles/Parameters_1-7.asset`.
 
