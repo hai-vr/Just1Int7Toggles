@@ -1,0 +1,79 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3577439759544680592
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3975746662323474900}
+  - component: {fileID: 8750663761691411562}
+  m_Layer: 0
+  m_Name: Just1Int7Toggles
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3975746662323474900
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3577439759544680592}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.018364191, y: 2.9496317, z: 0.045869112}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8750663761691411562
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3577439759544680592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2df539a5b0ed4966922fa6f9e2bdc4a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animatorController: {fileID: 0}
+  customEmptyClip: {fileID: 0}
+  avatar: {fileID: 0}
+  item1: {fileID: 0}
+  enabled1: 0
+  item2: {fileID: 0}
+  enabled2: 0
+  item3: {fileID: 0}
+  enabled3: 0
+  item4: {fileID: 0}
+  enabled4: 0
+  item5: {fileID: 0}
+  enabled5: 0
+  item6: {fileID: 0}
+  enabled6: 0
+  item7: {fileID: 0}
+  enabled7: 0
+  alsoGenerateLayerB: 0
+  item8: {fileID: 0}
+  enabled8: 0
+  item9: {fileID: 0}
+  enabled9: 0
+  item10: {fileID: 0}
+  enabled10: 0
+  item11: {fileID: 0}
+  enabled11: 0
+  item12: {fileID: 0}
+  enabled12: 0
+  item13: {fileID: 0}
+  enabled13: 0
+  item14: {fileID: 0}
+  enabled14: 0
+  item15: {fileID: 0}
+  enabled15: 0
