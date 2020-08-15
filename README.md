@@ -23,9 +23,7 @@ This comes at a cost of animator complexity, and a lack of indication on the men
 
 ## How to use
 
-Use the *Just 1 Int 7 Toggles Compiler* to configure items to toggle, which will add the face expression layers into your FX animator.
-
-If you wish to have multiple sets of face expressions, add additional *Combo Gesture Activity* in the *Combo Gesture Compiler* so that you can switch between them using the Action menu (or other means).
+Use the *Just 1 Int 7 Toggles Compiler* to configure items to toggle, which will add the layers into your FX animator.
 
 ### Just 1 Int 7 Toggles Compiler
 
