@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Hai.Just1Int7Toggles.Scripts.Components;
 using Hai.Just1Int7Toggles.Scripts.Editor.Internal.Reused;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -114,12 +116,17 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
             var itemNumber = exponent + firstItemNumber;
             var entry = _manifest.GetEntry(itemNumber);
 
-            if (entry.Item == null) return;
+            if (entry.Items.Length == 0) return;
 
-            var relativePath = ResolveRelativePath(_manifest.Avatar.transform, entry.Item.transform);
+            Dictionary<string, J1I7TToggleableInitialState> group = entry.Items
+                .Where(togglable => togglable.item != null)
+                .GroupBy(togglable => ResolveRelativePath(_manifest.Avatar.transform, togglable.item.transform))
+                .ToDictionary(items => items.Key, items => items.First().initialState);
 
-            var clipForOn = CreateClipToEnable(itemNumber, relativePath);
-            var clipForOff = CreateClipToDisable(itemNumber, relativePath);
+            if (group.Count == 0) return;
+            
+            var clipForOn = CreateClipToEnable(itemNumber, group);
+            var clipForOff = CreateClipToDisable(itemNumber, group);
 
             assetContainer.Include(clipForOn);
             assetContainer.Include(clipForOff);
@@ -144,20 +151,51 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
                 {motion = subTree, timeScale = 1, directBlendParameter = AlwaysOneParameterist.Name});
         }
 
-        private static Motionist CreateClipToDisable(int itemNumber, string relativePath)
+        private static Motionist CreateClipToDisable(int itemNumber, Dictionary<string, J1I7TToggleableInitialState> relativePaths)
         {
-            return Motionist.FromScratch()
+            var motionist = Motionist.FromScratch()
                 .WithName("Disable " + itemNumber)
-                .NonLooping()
-                .TogglesGameObjectOff(relativePath);
+                .NonLooping();
+            foreach (var path in relativePaths)
+            {
+                switch (path.Value)
+                {
+                    case J1I7TToggleableInitialState.Normal:
+                        motionist.TogglesGameObjectOff(path.Key);
+                        break;
+                    case J1I7TToggleableInitialState.Inverse:
+                        motionist.TogglesGameObjectOn(path.Key);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            return motionist;
         }
 
-        private static Motionist CreateClipToEnable(int itemNumber, string relativePath)
+        private static Motionist CreateClipToEnable(int itemNumber, Dictionary<string, J1I7TToggleableInitialState> relativePaths)
         {
-            return Motionist.FromScratch()
+            var motionist = Motionist.FromScratch()
                 .WithName("Enable " + itemNumber)
-                .NonLooping()
-                .TogglesGameObjectOn(relativePath);
+                .NonLooping();
+            
+            foreach (var path in relativePaths)
+            {
+                switch (path.Value)
+                {
+                    case J1I7TToggleableInitialState.Normal:
+                        motionist.TogglesGameObjectOn(path.Key);
+                        break;
+                    case J1I7TToggleableInitialState.Inverse:
+                        motionist.TogglesGameObjectOff(path.Key);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            return motionist;
         }
 
         private static string ResolveRelativePath(Transform avatar, Transform item)
