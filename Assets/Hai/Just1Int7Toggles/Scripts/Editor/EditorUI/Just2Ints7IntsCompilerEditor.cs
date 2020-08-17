@@ -1,16 +1,15 @@
-﻿using System.Linq;
-using Hai.Just1Int7Toggles.Scripts.Components;
-using Hai.Just1Int7Toggles.Scripts.Editor.Internal;
+﻿using Hai.Just1Int7Toggles.Scripts.Components;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
+using static UnityEditor.EditorGUIUtility;
 
 namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
 {
     [CustomEditor(typeof(Just2Ints7IntsCompiler))]
     public class Just2Ints7IntsCompilerEditor : UnityEditor.Editor
     {
-        private const int ListHeight = 80;
+        private const int IconSize = 80;
         public SerializedProperty groupOfOutfits;
 
         public ReorderableList groupOfOutfitsReorderableList;
@@ -27,7 +26,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
             );
             groupOfOutfitsReorderableList.drawElementCallback = GroupOfOutfitsListElement;
             groupOfOutfitsReorderableList.drawHeaderCallback = OutfitsListHeader;
-            groupOfOutfitsReorderableList.elementHeight = ListHeight;
+            groupOfOutfitsReorderableList.elementHeight = IconSize + 20;
         }
 
         private bool _foldoutAdvanced;
@@ -35,6 +34,12 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
+
+            var compiler = (Just2Ints7IntsCompiler) target;
+            EditorGUILayout.LabelField("Bit occupation", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Main layer: " + compiler.CountBitOccupationOf(OutfitLayer.MainLayer) + " / 7");
+            EditorGUILayout.LabelField("Secondary layer B: " + compiler.CountBitOccupationOf(OutfitLayer.SecondaryLayerB) + " / 8");
+            EditorGUILayout.Separator();
 
             groupOfOutfitsReorderableList.DoLayoutList();
 
@@ -46,24 +51,36 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
             var element = groupOfOutfitsReorderableList.serializedProperty.GetArrayElementAtIndex(index);
 
             EditorGUI.PropertyField(
-                new Rect(rect.x, rect.y, rect.width - ListHeight, EditorGUIUtility.singleLineHeight),
+                new Rect(rect.x, rect.y + singleLineHeight * 1, rect.width - IconSize, singleLineHeight),
                 element.FindPropertyRelative("value"),
                 new GUIContent("Group of Outfits")
             );
-            GUI.Label(
-                new Rect(rect.x, rect.y + EditorGUIUtility.singleLineHeight, rect.width - ListHeight, EditorGUIUtility.singleLineHeight),
-                "Bits in use: LOL"
+            EditorGUI.PropertyField(
+                new Rect(rect.x, rect.y + singleLineHeight * 2, rect.width - IconSize, singleLineHeight),
+                element.FindPropertyRelative("layer"),
+                new GUIContent("Layer")
             );
 
             var innerGroup = (J2I7IGroupOfOutfits)element.FindPropertyRelative("value").objectReferenceValue;
             if (innerGroup != null) {
+                GUI.Label(
+                    new Rect(rect.x, rect.y + singleLineHeight * 0, rect.width - IconSize, singleLineHeight),
+                    innerGroup.name + " (" + innerGroup.outfits.Count + " outfits)",
+                    EditorStyles.boldLabel
+                );
+
                 var icon = innerGroup.icon;
                 if (icon != null) {
                     EditorGUI.DrawPreviewTexture(
-                        new Rect(rect.x + rect.width - ListHeight, rect.y, ListHeight, ListHeight),
+                        new Rect(rect.x + rect.width - IconSize, rect.y, IconSize, IconSize),
                         AssetPreview.GetAssetPreview(icon)
                     );
                 }
+
+                GUI.Label(
+                    new Rect(rect.x, rect.y + singleLineHeight * 3, rect.width - IconSize, singleLineHeight),
+                    "Occupies " + innerGroup.BitCount() + " Bits"
+                );
             }
         }
 

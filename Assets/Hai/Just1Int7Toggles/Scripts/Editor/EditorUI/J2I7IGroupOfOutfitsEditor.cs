@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using Hai.Just1Int7Toggles.Scripts.Components;
-using Hai.Just1Int7Toggles.Scripts.Editor.Internal;
+﻿using Hai.Just1Int7Toggles.Scripts.Components;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -10,7 +8,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
     [CustomEditor(typeof(J2I7IGroupOfOutfits))]
     public class J2I7IGroupOfOutfitsEditor : UnityEditor.Editor
     {
-        private const int ListHeight = 80;
+        private const int IconSize = 80;
         public SerializedProperty name;
         public SerializedProperty icon;
         public SerializedProperty menu0to7;
@@ -46,7 +44,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
                     serializedObject.ApplyModifiedProperties();
                 }
             };
-            outfitsReorderableList.elementHeight = ListHeight;
+            outfitsReorderableList.elementHeight = IconSize;
 
         }
 
@@ -72,6 +70,17 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
 
             EditorGUILayout.Separator();
 
+            LabelDescription();
+
+            EditorGUILayout.Separator();
+
+            outfitsReorderableList.DoLayoutList();
+
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        private void LabelDescription()
+        {
             if (outfits.arraySize == 0)
             {
                 EditorGUILayout.LabelField("Invalid - 0 outfits", EditorStyles.boldLabel);
@@ -100,12 +109,6 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
             {
                 EditorGUILayout.LabelField("Invalid - Mote than 16 outfits", EditorStyles.boldLabel);
             }
-
-            EditorGUILayout.Separator();
-
-            outfitsReorderableList.DoLayoutList();
-
-            serializedObject.ApplyModifiedProperties();
         }
 
         private void OutfitsListElement(Rect rect, int index, bool isActive, bool isFocused)
@@ -113,19 +116,19 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
             var element = outfitsReorderableList.serializedProperty.GetArrayElementAtIndex(index);
 
             EditorGUI.PropertyField(
-                new Rect(rect.x, rect.y, rect.width - ListHeight, EditorGUIUtility.singleLineHeight),
+                new Rect(rect.x, rect.y, rect.width - IconSize, EditorGUIUtility.singleLineHeight),
                 element.FindPropertyRelative("name"),
                 new GUIContent("Name")
             );
             EditorGUI.PropertyField(
-                new Rect(rect.x, rect.y + EditorGUIUtility.singleLineHeight, rect.width - ListHeight, EditorGUIUtility.singleLineHeight),
+                new Rect(rect.x, rect.y + EditorGUIUtility.singleLineHeight, rect.width - IconSize, EditorGUIUtility.singleLineHeight),
                 element.FindPropertyRelative("icon"),
                 new GUIContent("Icon")
             );
             var icon = element.FindPropertyRelative("icon").objectReferenceValue;
             if (icon != null) {
                 EditorGUI.DrawPreviewTexture(
-                    new Rect(rect.x + rect.width - ListHeight, rect.y, ListHeight, ListHeight),
+                    new Rect(rect.x + rect.width - IconSize, rect.y, IconSize, IconSize),
                     AssetPreview.GetAssetPreview(icon)
                 );
             }
