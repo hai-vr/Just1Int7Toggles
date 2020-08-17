@@ -56,84 +56,105 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
         {
             serializedObject.Update();
 
-            var compiler = (Just2Ints7IntsCompiler) target;
-            EditorGUILayout.LabelField("Bit occupation", EditorStyles.boldLabel);
-            EditorGUILayout.LabelField("Main layer: " + compiler.CountBitOccupationOf(OutfitLayer.MainLayer) + " / 7");
-            EditorGUILayout.LabelField("Secondary layer B: " + compiler.CountBitOccupationOf(OutfitLayer.SecondaryLayerB) + " / 8");
+            LayoutBitOccupation();
             EditorGUILayout.Separator();
+            LayoutOutfits();
+            EditorGUILayout.Separator();
+            LayoutAnchors();
+            EditorGUILayout.Separator();
+            LayoutAnimatorGenerator();
+            EditorGUILayout.Separator();
+            LayoutMenuGenerator();
 
+            serializedObject.ApplyModifiedProperties();
+        }
+        private void LayoutBitOccupation()
+        {
+            EditorGUILayout.LabelField("Bit occupation", EditorStyles.boldLabel);
+
+            var compiler = (Just2Ints7IntsCompiler) target;
+            EditorGUILayout.LabelField("Main layer: " + compiler.CountBitOccupationOf(OutfitLayer.MainLayer) + " / 7");
+            EditorGUILayout.LabelField("Secondary layer B: " + compiler.CountBitOccupationOf(OutfitLayer.SecondaryLayerB) +
+                                       " / 8");
+        }
+
+        private void LayoutOutfits()
+        {
+            EditorGUILayout.LabelField("Outfits", EditorStyles.boldLabel);
             groupOfOutfitsReorderableList.DoLayoutList();
+        }
 
+        private void LayoutAnchors()
+        {
             EditorGUILayout.LabelField("Anchors", EditorStyles.boldLabel);
+
             EditorGUILayout.HelpBox("Anchors are overlapping", MessageType.Error);
             if (GUILayout.Button("Auto-solve anchors"))
             {
                 DoAutoSolveAnchors();
             }
 
-            serializedObject.ApplyModifiedProperties();
+            void DoAutoSolveAnchors()
+            {
+                throw new System.NotImplementedException();
+            }
         }
 
-        private void DoAutoSolveAnchors()
+        private void LayoutAnimatorGenerator()
         {
-            throw new System.NotImplementedException();
+        }
+
+        private void LayoutMenuGenerator()
+        {
         }
 
         private void GroupOfOutfitsListElement(Rect rect, int index, bool isActive, bool isFocused)
         {
             var element = groupOfOutfitsReorderableList.serializedProperty.GetArrayElementAtIndex(index);
 
-            EditorGUI.PropertyField(
-                new Rect(rect.x, rect.y + singleLineHeight * 1, rect.width - IconSize, singleLineHeight),
-                element.FindPropertyRelative("value"),
-                new GUIContent("Group of Outfits")
-            );
-            EditorGUI.PropertyField(
-                new Rect(rect.x, rect.y + singleLineHeight * 2, rect.width - IconSize, singleLineHeight),
-                element.FindPropertyRelative("layer"),
-                new GUIContent("Layer")
-            );
+            EditorGUI.PropertyField(RectangleAtLine(rect, 1), element.FindPropertyRelative("value"), new GUIContent("Group of Outfits"));
+            EditorGUI.PropertyField(RectangleAtLine(rect, 2), element.FindPropertyRelative("layer"), new GUIContent("Layer"));
             var anchorIsLocked = element.FindPropertyRelative("anchorLocked").boolValue;
             EditorGUI.BeginDisabledGroup(anchorIsLocked);
             EditorGUI.PropertyField(
-                new Rect(rect.x, rect.y + singleLineHeight * 3, rect.width - IconSize, singleLineHeight),
+                RectangleAtLine(rect, 3),
                 element.FindPropertyRelative("anchorValue"),
                 new GUIContent("Anchor value " + (anchorIsLocked ? " (Locked)" : ""))
             );
             EditorGUI.EndDisabledGroup();
-            EditorGUI.PropertyField(
-                new Rect(rect.x, rect.y + singleLineHeight * 4, rect.width - IconSize, singleLineHeight),
-                element.FindPropertyRelative("anchorLocked"),
-                new GUIContent("Anchor lock")
-            );
+            EditorGUI.PropertyField(RectangleAtLine(rect, 4), element.FindPropertyRelative("anchorLocked"), new GUIContent("Anchor lock"));
 
-            var innerGroup = (J2I7IGroupOfOutfits)element.FindPropertyRelative("value").objectReferenceValue;
-            if (innerGroup != null) {
+            var innerGroup = (J2I7IGroupOfOutfits) element.FindPropertyRelative("value").objectReferenceValue;
+            if (innerGroup != null)
+            {
                 GUI.Label(
-                    new Rect(rect.x, rect.y + singleLineHeight * 0, rect.width - IconSize, singleLineHeight),
+                    RectangleAtLine(rect, 0),
                     innerGroup.name + " (" + innerGroup.outfits.Count + " outfits)",
                     EditorStyles.boldLabel
                 );
 
                 var icon = innerGroup.icon;
-                if (icon != null) {
+                if (icon != null)
+                {
                     EditorGUI.DrawPreviewTexture(
                         new Rect(rect.x + rect.width - IconSize, rect.y, IconSize, IconSize),
                         AssetPreview.GetAssetPreview(icon)
                     );
                 }
 
-                GUI.Label(
-                    new Rect(rect.x, rect.y + singleLineHeight * 6, rect.width - IconSize, singleLineHeight),
-                    "Occupies " + innerGroup.BitCount() + " Bits"
-                );
+                GUI.Label(RectangleAtLine(rect, 6), "Occupies " + innerGroup.BitCount() + " Bits");
 
                 // EditorGUI.HelpBox(
-                    // new Rect(rect.x, rect.y + singleLineHeight * 7, rect.width, singleLineHeight * 2),
-                    // "Anchor value is out of bounds",
-                    // MessageType.Error
+                // new Rect(rect.x, rect.y + singleLineHeight * 7, rect.width, singleLineHeight * 2),
+                // "Anchor value is out of bounds",
+                // MessageType.Error
                 // );
             }
+        }
+
+        private static Rect RectangleAtLine(Rect rect, int i)
+        {
+            return new Rect(rect.x, rect.y + singleLineHeight * i, rect.width - IconSize, singleLineHeight);
         }
 
         private static void OutfitsListHeader(Rect rect)
