@@ -12,7 +12,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
     {
         private const int ListHeight = 80;
         public SerializedProperty name;
-        public SerializedProperty picture;
+        public SerializedProperty icon;
         public SerializedProperty menu0to7;
         public SerializedProperty indexDefaultOn;
         public SerializedProperty menu7to15;
@@ -23,7 +23,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
         private void OnEnable()
         {
             name = serializedObject.FindProperty("name");
-            picture = serializedObject.FindProperty("picture");
+            icon = serializedObject.FindProperty("icon");
             indexDefaultOn = serializedObject.FindProperty("indexDefaultOn");
             menu0to7 = serializedObject.FindProperty("menu0to7");
             menu7to15 = serializedObject.FindProperty("menu7to15");
@@ -56,9 +56,9 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
         {
             serializedObject.Update();
 
-
             EditorGUILayout.PropertyField(name, new GUIContent("name"));
-            EditorGUILayout.PropertyField(picture, new GUIContent("picture"));
+            EditorGUILayout.PropertyField(icon, new GUIContent("icon"));
+
             EditorGUILayout.PropertyField(indexDefaultOn, new GUIContent("indexDefaultOn"));
 
             if (outfits.arraySize > 2)

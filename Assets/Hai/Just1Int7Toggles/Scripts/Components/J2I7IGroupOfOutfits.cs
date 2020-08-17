@@ -9,7 +9,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Components
     public class J2I7IGroupOfOutfits : MonoBehaviour
     {
         public string name;
-        public Image picture;
+        public Texture2D icon;
 
         public List<J2I7IOutfit> outfits;
         public int indexDefaultOn;
