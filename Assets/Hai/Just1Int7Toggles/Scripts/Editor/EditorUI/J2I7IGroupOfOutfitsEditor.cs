@@ -10,6 +10,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
     {
         private const int IconSize = 80;
         public SerializedProperty name;
+        public SerializedProperty animationParameterName;
         public SerializedProperty icon;
         public SerializedProperty menu0to7;
         public SerializedProperty indexDefaultOn;
@@ -21,6 +22,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
         private void OnEnable()
         {
             name = serializedObject.FindProperty("name");
+            animationParameterName = serializedObject.FindProperty("animationParameterName");
             icon = serializedObject.FindProperty("icon");
             indexDefaultOn = serializedObject.FindProperty("indexDefaultOn");
             menu0to7 = serializedObject.FindProperty("menu0to7");
@@ -55,6 +57,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
             serializedObject.Update();
 
             EditorGUILayout.PropertyField(name, new GUIContent("name"));
+            EditorGUILayout.PropertyField(animationParameterName, new GUIContent("animationParameterName"));
             EditorGUILayout.PropertyField(icon, new GUIContent("icon"));
 
             EditorGUILayout.PropertyField(indexDefaultOn, new GUIContent("indexDefaultOn"));

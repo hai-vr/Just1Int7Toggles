@@ -12,6 +12,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Components
 
         public List<J2I7IOutfit> outfits;
         public int indexDefaultOn;
+        public string animationParameterName;
 
         public VRCExpressionsMenu menu0to7;
         public VRCExpressionsMenu menu7to15;

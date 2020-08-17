@@ -1,4 +1,5 @@
-﻿using Hai.Just1Int7Toggles.Scripts.Components;
+﻿using System.Collections.Generic;
+using Hai.Just1Int7Toggles.Scripts.Components;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -26,7 +27,27 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
             );
             groupOfOutfitsReorderableList.drawElementCallback = GroupOfOutfitsListElement;
             groupOfOutfitsReorderableList.drawHeaderCallback = OutfitsListHeader;
-            groupOfOutfitsReorderableList.elementHeight = IconSize + 20;
+            groupOfOutfitsReorderableList.onAddCallback = list =>
+            {
+                ReorderableList.defaultBehaviours.DoAddButton(list);
+                int nextAnchor;
+                if (groupOfOutfits.arraySize > 1)
+                {
+                    var elt = groupOfOutfits.GetArrayElementAtIndex(groupOfOutfits.arraySize - 2);
+                    var bitCount = ((J2I7IGroupOfOutfits) elt.FindPropertyRelative("value").objectReferenceValue).BitCount();
+                    nextAnchor = elt.FindPropertyRelative("anchorValue").intValue + (bitCount == null ? 0 : (int)bitCount);
+                }
+                else
+                {
+                    nextAnchor = 64;
+                }
+
+                groupOfOutfits.GetArrayElementAtIndex(groupOfOutfits.arraySize - 1).FindPropertyRelative("anchorValue")
+                    .intValue = nextAnchor;
+                serializedObject.ApplyModifiedProperties();
+
+            };
+            groupOfOutfitsReorderableList.elementHeight = IconSize + 80;
         }
 
         private bool _foldoutAdvanced;
@@ -43,7 +64,19 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
 
             groupOfOutfitsReorderableList.DoLayoutList();
 
+            EditorGUILayout.LabelField("Anchors", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox("Anchors are overlapping", MessageType.Error);
+            if (GUILayout.Button("Auto-solve anchors"))
+            {
+                DoAutoSolveAnchors();
+            }
+
             serializedObject.ApplyModifiedProperties();
+        }
+
+        private void DoAutoSolveAnchors()
+        {
+            throw new System.NotImplementedException();
         }
 
         private void GroupOfOutfitsListElement(Rect rect, int index, bool isActive, bool isFocused)
@@ -59,6 +92,19 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
                 new Rect(rect.x, rect.y + singleLineHeight * 2, rect.width - IconSize, singleLineHeight),
                 element.FindPropertyRelative("layer"),
                 new GUIContent("Layer")
+            );
+            var anchorIsLocked = element.FindPropertyRelative("anchorLocked").boolValue;
+            EditorGUI.BeginDisabledGroup(anchorIsLocked);
+            EditorGUI.PropertyField(
+                new Rect(rect.x, rect.y + singleLineHeight * 3, rect.width - IconSize, singleLineHeight),
+                element.FindPropertyRelative("anchorValue"),
+                new GUIContent("Anchor value " + (anchorIsLocked ? " (Locked)" : ""))
+            );
+            EditorGUI.EndDisabledGroup();
+            EditorGUI.PropertyField(
+                new Rect(rect.x, rect.y + singleLineHeight * 4, rect.width - IconSize, singleLineHeight),
+                element.FindPropertyRelative("anchorLocked"),
+                new GUIContent("Anchor lock")
             );
 
             var innerGroup = (J2I7IGroupOfOutfits)element.FindPropertyRelative("value").objectReferenceValue;
@@ -78,9 +124,15 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
                 }
 
                 GUI.Label(
-                    new Rect(rect.x, rect.y + singleLineHeight * 3, rect.width - IconSize, singleLineHeight),
+                    new Rect(rect.x, rect.y + singleLineHeight * 6, rect.width - IconSize, singleLineHeight),
                     "Occupies " + innerGroup.BitCount() + " Bits"
                 );
+
+                // EditorGUI.HelpBox(
+                    // new Rect(rect.x, rect.y + singleLineHeight * 7, rect.width, singleLineHeight * 2),
+                    // "Anchor value is out of bounds",
+                    // MessageType.Error
+                // );
             }
         }
 
