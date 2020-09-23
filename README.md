@@ -31,13 +31,17 @@ Use the *Just 1 Int 7 Toggles Compiler* to configure items to toggle, which will
 - Set the FX animator in the *FX Animator Controller* slot.
 - Set the avatar in the *Avatar* slot. The avatar will not be modified: This is only used to generate the animations in order to toggle the items.
 - Add an item in slots 1-7:
-  - Add a GameObject to toggle in the *Item* slot.
+  - Press + to add a GameObject to toggle in the *Item* slot.
+    - Multiple GameObjects can be added per item.
+    - The dropdown can be changed from *Normal* to *Inverse*.
+      - When the item is turned on, *Normal* GameObjects will show up.
+      - When the item is turned off, *Inverse* GameObjects will show up.
   - Check *Default state* to choose if the items is enabled by default after loading the avatar.
-    - The *Default state* can be different from the initial state of the GameObject:
+    - The *Default state* can be different from the initial state of the GameObjects:
       If animations are blocked by safety settings, *Default state* will be ignored.
 - Press *Generate* to generate the layers.
 
-![](https://github.com/hai-vr/Just1Int7Toggles/raw/z-res-pictures/Documentation/inspector-compiler.png)
+![](https://github.com/hai-vr/Just1Int7Toggles/raw/z-res-pictures/Documentation/inspector-compiler2.png)
 
 Note that adding items is not mandatory. You can use parameters to control your own animator layers, see [Advanced: Animator parameters](#advanced-animator-parameters).
 
