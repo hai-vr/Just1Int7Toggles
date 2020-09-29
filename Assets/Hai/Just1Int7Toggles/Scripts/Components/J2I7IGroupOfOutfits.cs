@@ -27,6 +27,11 @@ namespace Hai.Just1Int7Toggles.Scripts.Components
             if (outfits.Count <= 16) return 4;
             return null;
         }
+
+        public bool IsValidBitStorage()
+        {
+            return outfits.Count <= 16;
+        }
     }
 
     [Serializable]

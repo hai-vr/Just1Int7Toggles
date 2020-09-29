@@ -56,9 +56,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
         {
             serializedObject.Update();
 
-            EditorGUILayout.PropertyField(name, new GUIContent("name"));
-            EditorGUILayout.PropertyField(animationParameterName, new GUIContent("animationParameterName"));
-            EditorGUILayout.PropertyField(icon, new GUIContent("icon"));
+            EditorGUILayout.PropertyField(animationParameterName, new GUIContent("Animation parameter name"));
 
             EditorGUILayout.PropertyField(indexDefaultOn, new GUIContent("indexDefaultOn"));
 
@@ -78,6 +76,11 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
             EditorGUILayout.Separator();
 
             outfitsReorderableList.DoLayoutList();
+
+            EditorGUI.BeginDisabledGroup(outfits.arraySize <= 2);
+            EditorGUILayout.PropertyField(name, new GUIContent("Menu name"));
+            EditorGUILayout.PropertyField(icon, new GUIContent("Menu icon"));
+            EditorGUI.EndDisabledGroup();
 
             serializedObject.ApplyModifiedProperties();
         }
@@ -111,6 +114,11 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
             else
             {
                 EditorGUILayout.LabelField("Invalid - Mote than 16 outfits", EditorStyles.boldLabel);
+                EditorGUILayout.HelpBox(
+                    "Having more than 16 outfits is not supported.\n\n" +
+                    "J2I7I is only useful if it can store more than 3 smaller ints within just 2 regular ints.\n" +
+                    "When there is more than 16 outfits, J2I7I becomes about as expensive as having 2 regular ints.",
+                    MessageType.Error);
             }
         }
 
@@ -123,23 +131,44 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
                 element.FindPropertyRelative("name"),
                 new GUIContent("Name")
             );
-            EditorGUI.PropertyField(
-                new Rect(rect.x, rect.y + EditorGUIUtility.singleLineHeight, rect.width - IconSize, EditorGUIUtility.singleLineHeight),
-                element.FindPropertyRelative("icon"),
-                new GUIContent("Icon")
-            );
-            var icon = element.FindPropertyRelative("icon").objectReferenceValue;
-            if (icon != null) {
-                EditorGUI.DrawPreviewTexture(
-                    new Rect(rect.x + rect.width - IconSize, rect.y, IconSize, IconSize),
-                    AssetPreview.GetAssetPreview(icon)
+            if (outfits.arraySize > 2) {
+                EditorGUI.PropertyField(
+                    new Rect(rect.x, rect.y + EditorGUIUtility.singleLineHeight, rect.width - IconSize, EditorGUIUtility.singleLineHeight),
+                    element.FindPropertyRelative("icon"),
+                    new GUIContent("Icon")
                 );
+                var itemIcon = element.FindPropertyRelative("icon").objectReferenceValue;
+                if (itemIcon != null) {
+                    EditorGUI.DrawPreviewTexture(
+                        new Rect(rect.x + rect.width - IconSize, rect.y, IconSize, IconSize),
+                        AssetPreview.GetAssetPreview(itemIcon)
+                    );
+                }
+            }
+            else
+            {
+                var itemIcon = icon.objectReferenceValue;
+                if (outfits.arraySize == 2 && index == 1 || outfits.arraySize == 1 && index == 0)
+                {
+                    EditorGUI.PropertyField(
+                        new Rect(rect.x, rect.y + EditorGUIUtility.singleLineHeight, rect.width - IconSize, EditorGUIUtility.singleLineHeight),
+                        icon,
+                        new GUIContent("Item icon")
+                    );
+                    if (itemIcon != null)
+                    {
+                        EditorGUI.DrawPreviewTexture(
+                            new Rect(rect.x + rect.width - IconSize, rect.y, IconSize, IconSize),
+                            AssetPreview.GetAssetPreview(itemIcon)
+                        );
+                    }
+                }
             }
         }
 
-        private static void OutfitsListHeader(Rect rect)
+        private void OutfitsListHeader(Rect rect)
         {
-            EditorGUI.LabelField(rect, "Outfits");
+            EditorGUI.LabelField(rect, "Outfits (" + outfits.arraySize + ")");
         }
     }
 }

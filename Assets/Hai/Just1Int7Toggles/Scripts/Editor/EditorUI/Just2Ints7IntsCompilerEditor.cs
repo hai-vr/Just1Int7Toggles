@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Hai.Just1Int7Toggles.Scripts.Components;
+﻿using Hai.Just1Int7Toggles.Scripts.Components;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -70,7 +69,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
         }
         private void LayoutBitOccupation()
         {
-            EditorGUILayout.LabelField("Bit occupation", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Bit occupancy", EditorStyles.boldLabel);
 
             var compiler = (Just2Ints7IntsCompiler) target;
             EditorGUILayout.LabelField("Main layer: " + compiler.CountBitOccupationOf(OutfitLayer.MainLayer) + " / 7");
@@ -127,9 +126,22 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
             var innerGroup = (J2I7IGroupOfOutfits) element.FindPropertyRelative("value").objectReferenceValue;
             if (innerGroup != null)
             {
+                var outfitsCount = innerGroup.outfits.Count;
+                string message;
+                if (!innerGroup.IsValidBitStorage())
+                {
+                    message = innerGroup.name + " (invalid)";
+                }
+                else
+                {
+                    message = outfitsCount <= 1
+                        ? innerGroup.name + " (" + outfitsCount + " outfits)"
+                        : innerGroup.name + " (" + outfitsCount + " toggle)";
+                }
+
                 GUI.Label(
                     RectangleAtLine(rect, 0),
-                    innerGroup.name + " (" + innerGroup.outfits.Count + " outfits)",
+                    message,
                     EditorStyles.boldLabel
                 );
 
@@ -142,7 +154,14 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
                     );
                 }
 
-                GUI.Label(RectangleAtLine(rect, 6), "Occupies " + innerGroup.BitCount() + " Bits");
+                if (innerGroup.IsValidBitStorage())
+                {
+                    GUI.Label(RectangleAtLine(rect, 6), "Occupies " + innerGroup.BitCount() + " Bits");
+                }
+                else
+                {
+                    GUI.Label(RectangleAtLine(rect, 6), "Invalid occupancy");
+                }
 
                 // EditorGUI.HelpBox(
                 // new Rect(rect.x, rect.y + singleLineHeight * 7, rect.width, singleLineHeight * 2),
