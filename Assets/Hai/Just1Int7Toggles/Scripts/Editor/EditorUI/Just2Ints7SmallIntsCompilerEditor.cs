@@ -6,8 +6,8 @@ using static UnityEditor.EditorGUIUtility;
 
 namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
 {
-    [CustomEditor(typeof(Just2Ints7IntsCompiler))]
-    public class Just2Ints7IntsCompilerEditor : UnityEditor.Editor
+    [CustomEditor(typeof(Just2Ints7SmallIntsCompiler))]
+    public class Just2Ints7SmallIntsCompilerEditor : UnityEditor.Editor
     {
         private const int IconSize = 80;
         public SerializedProperty groupOfOutfits;
@@ -33,7 +33,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
                 if (groupOfOutfits.arraySize > 1)
                 {
                     var elt = groupOfOutfits.GetArrayElementAtIndex(groupOfOutfits.arraySize - 2);
-                    var bitCount = ((J2I7IGroupOfOutfits) elt.FindPropertyRelative("value").objectReferenceValue).BitCount();
+                    var bitCount = ((J2I7SIGroupOfOutfits) elt.FindPropertyRelative("value").objectReferenceValue).BitCount();
                     nextAnchor = elt.FindPropertyRelative("anchorValue").intValue + (bitCount == null ? 0 : (int)bitCount);
                 }
                 else
@@ -55,7 +55,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
         {
             serializedObject.Update();
 
-            LayoutBitOccupation();
+            LayoutBitOccupancy();
             EditorGUILayout.Separator();
             LayoutOutfits();
             EditorGUILayout.Separator();
@@ -67,13 +67,13 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
 
             serializedObject.ApplyModifiedProperties();
         }
-        private void LayoutBitOccupation()
+        private void LayoutBitOccupancy()
         {
             EditorGUILayout.LabelField("Bit occupancy", EditorStyles.boldLabel);
 
-            var compiler = (Just2Ints7IntsCompiler) target;
-            EditorGUILayout.LabelField("Main layer: " + compiler.CountBitOccupationOf(OutfitLayer.MainLayer) + " / 7");
-            EditorGUILayout.LabelField("Secondary layer B: " + compiler.CountBitOccupationOf(OutfitLayer.SecondaryLayerB) +
+            var compiler = (Just2Ints7SmallIntsCompiler) target;
+            EditorGUILayout.LabelField("Main layer: " + compiler.CountBitOccupancyOf(OutfitLayer.MainLayer) + " / 7");
+            EditorGUILayout.LabelField("Secondary layer B: " + compiler.CountBitOccupancyOf(OutfitLayer.SecondaryLayerB) +
                                        " / 8");
         }
 
@@ -123,7 +123,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
             EditorGUI.EndDisabledGroup();
             EditorGUI.PropertyField(RectangleAtLine(rect, 4), element.FindPropertyRelative("anchorLocked"), new GUIContent("Anchor lock"));
 
-            var innerGroup = (J2I7IGroupOfOutfits) element.FindPropertyRelative("value").objectReferenceValue;
+            var innerGroup = (J2I7SIGroupOfOutfits) element.FindPropertyRelative("value").objectReferenceValue;
             if (innerGroup != null)
             {
                 var outfitsCount = innerGroup.outfits.Count;

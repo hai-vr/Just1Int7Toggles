@@ -5,7 +5,7 @@ using VRC.SDK3.Avatars.ScriptableObjects;
 
 namespace Hai.Just1Int7Toggles.Scripts.Components
 {
-    public class J2I7IGroupOfOutfits : MonoBehaviour
+    public class J2I7SIGroupOfOutfits : MonoBehaviour
     {
         public string name;
         public Texture2D icon;

@@ -5,8 +5,8 @@ using UnityEngine;
 
 namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
 {
-    [CustomEditor(typeof(J2I7IGroupOfOutfits))]
-    public class J2I7IGroupOfOutfitsEditor : UnityEditor.Editor
+    [CustomEditor(typeof(J2I7SIGroupOfOutfits))]
+    public class J2I7SIGroupOfOutfitsEditor : UnityEditor.Editor
     {
         private const int IconSize = 80;
         public SerializedProperty name;
@@ -153,7 +153,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
                     EditorGUI.PropertyField(
                         new Rect(rect.x, rect.y + EditorGUIUtility.singleLineHeight, rect.width - IconSize, EditorGUIUtility.singleLineHeight),
                         icon,
-                        new GUIContent("Item icon")
+                        new GUIContent("Toggle ON icon")
                     );
                     if (itemIcon != null)
                     {

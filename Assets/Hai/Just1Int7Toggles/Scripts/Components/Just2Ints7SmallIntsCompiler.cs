@@ -6,7 +6,7 @@ using VRC.SDK3.Avatars.Components;
 
 namespace Hai.Just1Int7Toggles.Scripts.Components
 {
-    public class Just2Ints7IntsCompiler : MonoBehaviour
+    public class Just2Ints7SmallIntsCompiler : MonoBehaviour
     {
         public RuntimeAnimatorController animatorController;
         public AnimationClip customEmptyClip;
@@ -15,7 +15,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Components
 
         public List<GroupOfOutfitsContainer> groupOfOutfits;
 
-        public int CountBitOccupationOf(OutfitLayer wantedLayer)
+        public int CountBitOccupancyOf(OutfitLayer wantedLayer)
         {
             return groupOfOutfits
                 .Where(container => container.layer == wantedLayer && container.value != null && container.value.BitCount() != null)
@@ -27,7 +27,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Components
     [Serializable]
     public struct GroupOfOutfitsContainer
     {
-        public J2I7IGroupOfOutfits value;
+        public J2I7SIGroupOfOutfits value;
         public int anchorValue;
         public bool anchorLocked;
         public OutfitLayer layer;
