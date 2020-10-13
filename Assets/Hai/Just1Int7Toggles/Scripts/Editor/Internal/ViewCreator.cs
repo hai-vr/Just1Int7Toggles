@@ -36,7 +36,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
                 .WithAnimation(CreateBlendTree())
                 .WithWriteDefaultsSetTo(true) // FIXME: Why do I have to do this for the system to work?
                 .Drives(AlwaysOneParameterist, 1f);
-            
+
             {
                 var defaultStageValue = Just1Int7TogglesCompilerInternal.LayerASignalThreshold;
                 for (var exponent = 0; exponent < Just1Int7TogglesCompilerInternal.ExponentCountForLayerA; exponent++)
@@ -51,7 +51,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
                 local.Drives(MainParameterist, defaultStageValue);
                 remote.Drives(DirtyCheckParameterist, 1);
             }
-            
+
             if (_alsoGenerateLayerB)
             {
                 var defaultStageValue = 0;
@@ -69,17 +69,19 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
             }
 
             init.TransitionsTo(local).Whenever(ItIsLocal());
-            init.TransitionsTo(remote).Whenever(ItIsRemote());
+            init.TransitionsTo(remote)
+                .Whenever(ItIsRemote())
+                .And(MainParameterist).IsGreaterThan(Just1Int7TogglesCompilerInternal.LayerASignalThreshold - 1); // Wait until synchronization
             local.AutomaticallyMovesTo(blend);
             remote.AutomaticallyMovesTo(blend);
         }
-        
+
         private Motion CreateBlendTree()
         {
             var assetContainer_Base = new AnimatorController();
             var assetContainer = new AssetContainerist(assetContainer_Base)
                 .GenerateAssetFileIn("", "GeneratedJ1I7T__", "");
-            
+
             var childMotions = new List<ChildMotion>();
             for (var exponent = 0; exponent < Just1Int7TogglesCompilerInternal.ExponentCountForLayerA; exponent++)
             {
@@ -124,7 +126,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
                 .ToDictionary(items => items.Key, items => items.First().initialState);
 
             if (group.Count == 0) return;
-            
+
             var clipForOn = CreateClipToEnable(itemNumber, group);
             var clipForOff = CreateClipToDisable(itemNumber, group);
 
@@ -179,7 +181,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
             var motionist = Motionist.FromScratch()
                 .WithName("Enable " + itemNumber)
                 .NonLooping();
-            
+
             foreach (var path in relativePaths)
             {
                 switch (path.Value)

@@ -54,7 +54,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
             {
                 _animatorGenerator.CreateParamsAsNeeded(BitAsInt(BitLayer.A, exponent), BitAsFloat(BitLayer.A, exponent));
             }
-            
+
             if (_alsoGenerateLayerB) {
                 _animatorGenerator.CreateParamsAsNeeded(SecondaryOfBParameterist, DirtyCheckOfBParameterist);
                 for (var exponent = 0; exponent < 8; exponent++)
@@ -68,7 +68,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
         {
             var machinist = _animatorGenerator.CreateOrRemakeLayerAtSameIndex("Hai_J1I7T_Controller", 0f)
                 .WithEntryPosition(1, 1);
-            
+
             var init = machinist.NewState("Init", 0, 0);
             var ignore = machinist.NewState("Ignore", 0, -5);
             var waiting = machinist.NewState("Waiting", 0, 1);
@@ -83,17 +83,17 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
             dirtyCheckForLayerA.TransitionsTo(waiting).When(DirtyCheckParameterist).IsEqualTo(0);
 
             CreateInverters(BitLayer.A, machinist, dirtyCheckForLayerA, signal);
-            
+
             if (_alsoGenerateLayerB) {
                 var dirtyCheckForLayerB = machinist.NewState("DirtyCheckLayerB", 4, 9)
                     .Drives(DirtyCheckOfBParameterist, 1)
                     .Drives(DirtyCheckParameterist, 1); // need to dirty check the main animator in order to refresh the menu value
 
-                
+
                 dirtyCheckForLayerB.TransitionsTo(waiting)
                     .When(DirtyCheckOfBParameterist).IsEqualTo(0)
                     .And(DirtyCheckParameterist).IsEqualTo(0); // need to dirty check the main animator in order to refresh the menu value
-                
+
                 CreateInverters(BitLayer.B, machinist, dirtyCheckForLayerB, signal);
             }
         }
@@ -141,13 +141,15 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
             var horizontal = isDepthEven ? Math.Max(exponent, 1.25f) + (depth < 2 ? 2 : 0) : 0;
             var vertical = !isDepthEven ? Math.Max(exponent, 1.25f) + (depth < 2 ? 2 : 0) : 0;
             var currentThreshold = currentNumber + weight;
-            
+
             var low = machinist.NewState(exponent + "_LT" + currentThreshold, x - horizontal, y - vertical);
             var high = machinist.NewState(exponent + "_GE" + currentThreshold, x + horizontal, y + vertical);
 
             previousState.TransitionsTo(low).Whenever(ItIsLocal()).And(BitAsInt(layer, exponent)).IsEqualTo(0);
-            previousState.TransitionsTo(low).Whenever(ItIsRemote()).And(layer == BitLayer.A ? MainParameterist : SecondaryOfBParameterist).IsLesserThan(currentThreshold);
-            
+            previousState.TransitionsTo(low).Whenever(ItIsRemote())
+                .And(layer == BitLayer.A ? MainParameterist : SecondaryOfBParameterist).IsLesserThan(currentThreshold)
+                .And(MainParameterist).IsGreaterThan(LayerASignalThreshold - 1); // Suspend until synchronization
+
             previousState.TransitionsTo(high).Whenever(ItIsLocal()).And(BitAsInt(layer, exponent)).IsNotEqualTo(0);
             previousState.TransitionsTo(high).Whenever(ItIsRemote()).And(layer == BitLayer.A ? MainParameterist : SecondaryOfBParameterist).IsGreaterThan(currentThreshold - 1);
 
@@ -160,7 +162,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
             {
                 GenerateLeafBehaviors(layer, low, currentNumber);
                 GenerateLeafBehaviors(layer, high, currentThreshold);
-                
+
                 if (layer == BitLayer.A) {
                     GenerateMainLeafExitTransitions(low, currentNumber);
                     GenerateMainLeafExitTransitions(high, currentThreshold);
@@ -197,7 +199,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
                 leaf.Drives(BitAsInt(layer, exponent), bitValue);
                 leaf.Drives(BitAsFloat(layer, exponent), bitValue);
             }
-            
+
             leaf.Drives(layer == BitLayer.A ? MainParameterist : SecondaryOfBParameterist, encodedNumber);
             leaf.Drives(layer == BitLayer.A ? DirtyCheckParameterist : DirtyCheckOfBParameterist, 0);
         }
