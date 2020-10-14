@@ -73,7 +73,18 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
                 .Whenever(ItIsRemote())
                 .And(MainParameterist).IsGreaterThan(Just1Int7TogglesCompilerInternal.LayerASignalThreshold - 1); // Wait until synchronization
             local.AutomaticallyMovesTo(blend);
-            remote.AutomaticallyMovesTo(blend);
+
+            if (_alsoGenerateLayerB)
+            {
+                remote.TransitionsTo(blend)
+                    .When(DirtyCheckParameterist).IsEqualTo(0)
+                    .And(DirtyCheckOfBParameterist).IsEqualTo(0);
+            }
+            else
+            {
+                remote.TransitionsTo(blend)
+                    .When(DirtyCheckParameterist).IsEqualTo(0);
+            }
         }
 
         private Motion CreateBlendTree()
