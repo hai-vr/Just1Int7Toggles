@@ -24,3 +24,5 @@ Once this is set, click the `Generate FX Animator layers` button.
 This removes the binary tree animator layers, animator parameters, and creates new animator layers.
 
 Once this is done, you will still need to create the Expression menus to toggle the items by yourself.
+
+![](https://raw.githubusercontent.com/hai-vr/Just1Int7Toggles/z-res-pictures/Documentation/av3toggles.gif)
