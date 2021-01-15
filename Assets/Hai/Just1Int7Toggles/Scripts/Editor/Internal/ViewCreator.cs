@@ -29,7 +29,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
             var init = machinist.NewState("Init", 0, -2);
             var blend = machinist.NewState("Blend", 0, 0)
                 .WithAnimation(CreateBlendTree())
-                .WithWriteDefaultsSetTo(true) // FIXME: Why do I have to do this for the system to work?
+                // .WithWriteDefaultsSetTo(true) // FIXME: Why do I have to do this for the system to work?
                 .Drives(AlwaysOneParameterist, 1f);
 
             init.AutomaticallyMovesTo(blend);
