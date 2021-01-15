@@ -9,58 +9,60 @@ namespace Hai.Just1Int7Toggles.Scripts.Components
     {
         public RuntimeAnimatorController animatorController;
         public AnimationClip customEmptyClip;
-        
+
         public VRCAvatarDescriptor avatar;
 
         public int internalVersion;
-        
+
+        public bool convertedToInventorySystem;
+
         public TogglableContainer[] togglables;
         public bool[] enableds;
 
         public GameObject item1;
         public bool enabled1;
-        
+
         public GameObject item2;
         public bool enabled2;
-        
+
         public GameObject item3;
         public bool enabled3;
-        
+
         public GameObject item4;
         public bool enabled4;
-        
+
         public GameObject item5;
         public bool enabled5;
-        
+
         public GameObject item6;
         public bool enabled6;
-        
+
         public GameObject item7;
         public bool enabled7;
 
         public bool alsoGenerateLayerB;
-        
+
         public GameObject item8;
         public bool enabled8;
-        
+
         public GameObject item9;
         public bool enabled9;
-        
+
         public GameObject item10;
         public bool enabled10;
-        
+
         public GameObject item11;
         public bool enabled11;
-        
+
         public GameObject item12;
         public bool enabled12;
-        
+
         public GameObject item13;
         public bool enabled13;
-        
+
         public GameObject item14;
         public bool enabled14;
-        
+
         public GameObject item15;
         public bool enabled15;
 
@@ -70,10 +72,10 @@ namespace Hai.Just1Int7Toggles.Scripts.Components
             {
                 return;
             }
-            
+
             togglables = Enumerable.Repeat(0, 15).Select(i => new TogglableContainer { values = new List<TogglableItem>() }).ToArray();
             enableds = Enumerable.Repeat(0, 15).Select(i => false).ToArray();
-                
+
             var prevItems = new[]
             {
                 item1, item2, item3, item4, item5, item6,
@@ -89,7 +91,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Components
                         {item = item, initialState = J1I7TToggleableInitialState.Normal});
                 }
             }
-                
+
             var prevEnableds = new[]
             {
                 enabled1, enabled2, enabled3, enabled4, enabled5, enabled6,
@@ -105,13 +107,13 @@ namespace Hai.Just1Int7Toggles.Scripts.Components
             internalVersion = 1;
         }
     }
-    
+
     [System.Serializable]
     public struct TogglableContainer
     {
         public List<TogglableItem> values;
     }
-    
+
     [System.Serializable]
     public struct TogglableItem
     {

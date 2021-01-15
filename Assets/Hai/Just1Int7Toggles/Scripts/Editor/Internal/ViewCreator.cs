@@ -14,13 +14,11 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
     {
         private readonly AnimatorGenerator _animatorGenerator;
         private readonly TogglesManifest _manifest;
-        private readonly bool _alsoGenerateLayerB;
 
-        internal ViewCreator(AnimatorGenerator animatorGenerator, TogglesManifest manifest, bool alsoGenerateLayerB)
+        internal ViewCreator(AnimatorGenerator animatorGenerator, TogglesManifest manifest)
         {
             _animatorGenerator = animatorGenerator;
             _manifest = manifest;
-            _alsoGenerateLayerB = alsoGenerateLayerB;
         }
 
         internal void CreateOrReplaceView()
@@ -44,17 +42,9 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
                 .GenerateAssetFileIn("", "GeneratedJ1I7T__", "");
 
             var childMotions = new List<ChildMotion>();
-            for (var exponent = 0; exponent < Just1Int7TogglesCompilerInternal.ExponentCountForLayerA; exponent++)
+            foreach (var group in _manifest.Groups)
             {
-                GenerateItemTree(BitLayer.A, exponent, assetContainer, assetContainer_Base, childMotions);
-            }
-
-            if (_alsoGenerateLayerB)
-            {
-                for (var exponent = 0; exponent < 8; exponent++)
-                {
-                    GenerateItemTree(BitLayer.B, exponent, assetContainer, assetContainer_Base, childMotions);
-                }
+                GenerateItemTree(group, assetContainer, assetContainer_Base, childMotions);
             }
 
             var blendTree = new BlendTree
@@ -71,33 +61,31 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
             return blendTree;
         }
 
-        private void GenerateItemTree(BitLayer layer, int exponent, AssetContainerist assetContainer,
+        private void GenerateItemTree(JustHaiToggleGroup container, AssetContainerist assetContainer,
             AnimatorController assetContainerBase,
             List<ChildMotion> childMotions)
         {
-            var firstItemNumber = layer == BitLayer.A ? 1 : ((int)layer * 8);
-            var itemNumber = exponent + firstItemNumber;
-            var entry = _manifest.GetEntry(itemNumber);
+            var itemName = container.parameterName;
 
-            if (entry.Items.Length == 0) return;
+            if (container.togglables.Count == 0) return;
 
-            Dictionary<string, J1I7TToggleableInitialState> group = entry.Items
+            Dictionary<string, ToggleableInitialStateV2> group = container.togglables
                 .Where(togglable => togglable.item != null)
                 .GroupBy(togglable => ResolveRelativePath(_manifest.Avatar.transform, togglable.item.transform))
                 .ToDictionary(items => items.Key, items => items.First().initialState);
 
             if (group.Count == 0) return;
 
-            var clipForOn = CreateClipToEnable(itemNumber, group);
-            var clipForOff = CreateClipToDisable(itemNumber, group);
+            var clipForOn = CreateClipToEnable(itemName, group);
+            var clipForOff = CreateClipToDisable(itemName, group);
 
             assetContainer.Include(clipForOn);
             assetContainer.Include(clipForOff);
 
             var subTree = new BlendTree
             {
-                name = "autoBT_Item" + itemNumber,
-                blendParameter = BitAsFloat(layer, exponent).Name,
+                name = "autoBT_Item" + itemName,
+                blendParameter = container.parameterName + "_F",
                 minThreshold = 0,
                 maxThreshold = 1,
                 blendType = BlendTreeType.Simple1D,
@@ -114,19 +102,19 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
                 {motion = subTree, timeScale = 1, directBlendParameter = AlwaysOneParameterist.Name});
         }
 
-        private static Motionist CreateClipToDisable(int itemNumber, Dictionary<string, J1I7TToggleableInitialState> relativePaths)
+        private static Motionist CreateClipToDisable(string itemName, Dictionary<string, ToggleableInitialStateV2> relativePaths)
         {
             var motionist = Motionist.FromScratch()
-                .WithName("Disable " + itemNumber)
+                .WithName("Disable " + itemName)
                 .NonLooping();
             foreach (var path in relativePaths)
             {
                 switch (path.Value)
                 {
-                    case J1I7TToggleableInitialState.Normal:
+                    case ToggleableInitialStateV2.Normal:
                         motionist.TogglesGameObjectOff(path.Key);
                         break;
-                    case J1I7TToggleableInitialState.Inverse:
+                    case ToggleableInitialStateV2.Inverse:
                         motionist.TogglesGameObjectOn(path.Key);
                         break;
                     default:
@@ -137,20 +125,20 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
             return motionist;
         }
 
-        private static Motionist CreateClipToEnable(int itemNumber, Dictionary<string, J1I7TToggleableInitialState> relativePaths)
+        private static Motionist CreateClipToEnable(string itemName, Dictionary<string, ToggleableInitialStateV2> relativePaths)
         {
             var motionist = Motionist.FromScratch()
-                .WithName("Enable " + itemNumber)
+                .WithName("Enable " + itemName)
                 .NonLooping();
 
             foreach (var path in relativePaths)
             {
                 switch (path.Value)
                 {
-                    case J1I7TToggleableInitialState.Normal:
+                    case ToggleableInitialStateV2.Normal:
                         motionist.TogglesGameObjectOn(path.Key);
                         break;
-                    case J1I7TToggleableInitialState.Inverse:
+                    case ToggleableInitialStateV2.Inverse:
                         motionist.TogglesGameObjectOff(path.Key);
                         break;
                     default:

@@ -107,5 +107,17 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal.Reused
                 _animatorController.RemoveLayer(originalIndexToPreserveOrdering);
             }
         }
+
+        public void RemoveParamsIndiscriminatelyAsNeeded(params string[] names)
+        {
+            var paramsToDelete = _animatorController.parameters
+                .Where(parameter => names.Contains(parameter.name))
+                .ToList();
+
+            foreach (var parameter in paramsToDelete)
+            {
+                _animatorController.RemoveParameter(parameter);
+            }
+        }
     }
 }

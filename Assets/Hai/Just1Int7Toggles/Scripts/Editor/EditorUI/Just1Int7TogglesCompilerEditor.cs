@@ -2,8 +2,8 @@
 using Hai.Just1Int7Toggles.Scripts.Components;
 using Hai.Just1Int7Toggles.Scripts.Editor.Internal;
 using UnityEditor;
-using UnityEditorInternal;
 using UnityEngine;
+using VRC.SDK3.Avatars.ScriptableObjects;
 
 namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
 {
@@ -12,72 +12,94 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
     {
         public SerializedProperty animatorController;
         public SerializedProperty customEmptyClip;
-        
+
         public SerializedProperty avatar;
-        
-        public SerializedProperty alsoGenerateLayerB;
-        
-        public ReorderableList[] togglablesReorderableList;
-        public SerializedProperty enableds;
-        
+
         private void OnEnable()
         {
             AsCompiler().Migrate();
-            
+
             animatorController = serializedObject.FindProperty("animatorController");
             customEmptyClip = serializedObject.FindProperty("customEmptyClip");
-            
+
             avatar = serializedObject.FindProperty("avatar");
-            alsoGenerateLayerB = serializedObject.FindProperty("alsoGenerateLayerB");
- 
-            enableds = serializedObject.FindProperty("enableds"); 
-            
-            // reference: https://blog.terresquall.com/2020/03/creating-reorderable-lists-in-the-unity-inspector/
-            togglablesReorderableList = Enumerable.Repeat(0, 15)
-                .Select((ignore, index) =>
-                {
-                    var reorderableList = new ReorderableList(
-                        serializedObject,
-                        serializedObject.FindProperty("togglables").GetArrayElementAtIndex(index).FindPropertyRelative("values"),
-                        true, true, true, true
-                    );
-                    reorderableList.drawElementCallback = (rect, oIndex, active, focused) => TogglablesListElement(index, rect, oIndex, active, focused);
-                    reorderableList.drawHeaderCallback = rect => TogglablesListHeader(index, rect);
-                    
-                    return reorderableList;
-                })
-                .ToArray();
         }
 
         private bool _foldoutAdvanced;
-        
+
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
 
+            if (IsLegacy())
+            {
+                if (GUILayout.Button("Convert to Just Hai Toggles Inventory System", GUILayout.Height(100)))
+                {
+                    Convert();
+                }
+
+                return;
+            }
+
+            var compiler = (Just1Int7TogglesCompiler) target;
+
+            compiler.convertedToInventorySystem = true;
+
             EditorGUILayout.PropertyField(animatorController, new GUIContent("FX Animator Controller to overwrite"));
             EditorGUILayout.PropertyField(avatar, new GUIContent("Avatar"));
 
-            for (var index = 0; index < 7; index++)
+            EditorGUILayout.LabelField("Groups", EditorStyles.boldLabel);
+            var toggleGroups = compiler.GetComponents<JustHaiToggleGroup>();
+            var expressionParameters = compiler.avatar != null ? compiler.avatar.expressionParameters : null;
+            if (avatar.serializedObject.targetObject == null)
             {
-                EditorForItem(index);
+                EditorGUILayout.HelpBox("Avatar is missing.", MessageType.Error);
             }
-            
-            EditorGUILayout.LabelField("Complex generator", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(alsoGenerateLayerB, new GUIContent("Enable complex generator"));
-            if (alsoGenerateLayerB.boolValue) {
-                EditorGUILayout.HelpBox(@"CAUTION: Adding more than 7 items is highly discouraged.
-The generated animator is way more complex, and should be avoided if unused.
-If you have 7 items or less, put them all in slots 1-7 and uncheck ""Enable complex generator"".", MessageType.Warning);
-
-                for (var index = 7; index < 15; index++)
+            else if (expressionParameters == null)
+            {
+                EditorGUILayout.HelpBox("Avatar does not have Expression Parameters.\nPlease add one.", MessageType.Warning);
+            }
+            var anyEmpty = 0;
+            foreach (var group in toggleGroups)
+            {
+                if (!string.IsNullOrEmpty(@group.parameterName))
                 {
-                    EditorForItem(index);
+                    var param = expressionParameters != null ? expressionParameters.FindParameter(@group.parameterName) : null;
+
+                    EditorGUILayout.LabelField("- " + group.parameterName);
+                    if (expressionParameters != null)
+                    {
+                        ParameterFixes(param, expressionParameters, @group);
+                    }
+                }
+                else
+                {
+                    anyEmpty++;
                 }
             }
-            
+
+            if (anyEmpty > 0)
+            {
+                EditorGUILayout.HelpBox($"There are {anyEmpty} groups that do not have parameter names yet.", MessageType.Error);
+            }
+
+            if (expressionParameters != null)
+            {
+                LegacyRemoval(expressionParameters);
+                NoNameRemoval(expressionParameters);
+            }
+
+            EditorGUI.BeginDisabledGroup(anyEmpty > 0);
+            if (GUILayout.Button("+ Add group..."))
+            {
+                compiler.gameObject.AddComponent<JustHaiToggleGroup>();
+            }
+            EditorGUI.EndDisabledGroup();
+
+            EditorGUILayout.LabelField("Generator", EditorStyles.boldLabel);
+
             EditorGUI.BeginDisabledGroup(
-                ThereIsNoAnimatorController() || ThereIsNoAvatar() || MoreItemsAreEnabledButNothingIsSet()
+                ThereIsNoAnimatorController() || ThereIsNoAvatar()
             );
 
             bool ThereIsNoAnimatorController()
@@ -90,58 +112,105 @@ If you have 7 items or less, put them all in slots 1-7 and uncheck ""Enable comp
                 return avatar.objectReferenceValue == null;
             }
 
-            bool MoreItemsAreEnabledButNothingIsSet()
-            {
-                var compiler = AsCompiler();
-                if (!alsoGenerateLayerB.boolValue)
-                {
-                    return false;
-                }
-                for (var i = 7; i < 15; i++)
-                {
-                    if (
-                        compiler.togglables[i].values.Count != 0 && 
-                        compiler.togglables[i].values.Count(togglable => togglable.item != null) != 0
-                    ) {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-            
-            if (GUILayout.Button(alsoGenerateLayerB.boolValue ? "Generate complex FX Animator layers" : "Generate FX Animator layers"))
+            if (GUILayout.Button("Generate FX Animator layers"))
             {
                 DoGenerateEverything();
             }
-            
+
             EditorGUI.EndDisabledGroup();
 
-            if (MoreItemsAreEnabledButNothingIsSet())
-            {
-                EditorGUILayout.HelpBox(@"Cannot generate as slots 8-15 are empty.
-Please uncheck ""Enable complex generator"".", MessageType.Error);
-            }
-            
-            
             EditorGUILayout.Space();
-        
+
             _foldoutAdvanced = EditorGUILayout.Foldout(_foldoutAdvanced, "Advanced");
             if (_foldoutAdvanced)
             {
                 EditorGUILayout.LabelField("Fine tuning", EditorStyles.boldLabel);
                 EditorGUILayout.PropertyField(customEmptyClip, new GUIContent("Custom 2-frame empty animation clip (optional)"));
             }
-            
+
             serializedObject.ApplyModifiedProperties();
         }
 
-        private void EditorForItem(int index)
+        private static void NoNameRemoval(VRCExpressionParameters expressionParameters)
         {
-            EditorGUILayout.LabelField("Item #" + (index + 1), EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(enableds.GetArrayElementAtIndex(index), new GUIContent("Default state"));
-            togglablesReorderableList[index].DoLayoutList();
-            EditorGUILayout.Separator();
+            var anyBlankParameter = expressionParameters.parameters.Any(parameter => parameter.name == "");
+
+            if (anyBlankParameter)
+            {
+                EditorGUILayout.LabelField("Clean up", EditorStyles.boldLabel);
+                EditorGUILayout.HelpBox("Your avatar has Expression Parameters with no name. This will take up unnecessary memory that Just Hai Toggles Inventory System won't be able to use.", MessageType.Error);
+                if (GUILayout.Button("Fix: Remove empty Expression Parameters"))
+                {
+                    expressionParameters.parameters = expressionParameters.parameters
+                        .Where(parameter => parameter.name != "")
+                        .ToArray();
+                }
+            }
+        }
+
+        private static void LegacyRemoval(VRCExpressionParameters expressionParameters)
+        {
+            var legacyParamA = expressionParameters.FindParameter("J1I7T_A_Sync");
+            var legacyParamB = expressionParameters.FindParameter("J1I7T_B_Sync");
+            if (legacyParamA != null || legacyParamB != null)
+            {
+                EditorGUILayout.LabelField("Legacy", EditorStyles.boldLabel);
+                if (legacyParamA != null)
+                {
+                    EditorGUILayout.HelpBox("Your avatar has an Expression Parameter with name J1I7T_A_Sync. It is no longer used.", MessageType.Error);
+                }
+
+                if (legacyParamB != null)
+                {
+                    EditorGUILayout.HelpBox("Your avatar has an Expression Parameter with name J1I7T_B_Sync. It is no longer used.", MessageType.Error);
+                }
+
+                if (GUILayout.Button("Fix: Remove legacy Expression Parameters"))
+                {
+                    expressionParameters.parameters = expressionParameters.parameters
+                        .Where(parameter => parameter.name != "J1I7T_A_Sync")
+                        .Where(parameter => parameter.name != "J1I7T_B_Sync")
+                        .ToArray();
+                }
+            }
+        }
+
+        private static void ParameterFixes(VRCExpressionParameters.Parameter param, VRCExpressionParameters expressionParameters, JustHaiToggleGroup @group)
+        {
+            if (param == null)
+            {
+                EditorGUILayout.HelpBox("Expression Parameter does not exist", MessageType.Error);
+                if (GUILayout.Button("Fix: Create Expression Parameter"))
+                {
+                    var newParameters = new VRCExpressionParameters.Parameter[expressionParameters.parameters.Length + 1];
+                    expressionParameters.parameters.CopyTo(newParameters, 0);
+                    expressionParameters.parameters = newParameters;
+                    expressionParameters.parameters[expressionParameters.parameters.Length - 1] = new VRCExpressionParameters.Parameter()
+                    {
+                        name = @group.parameterName,
+                        defaultValue = @group.hintEnabled ? 1f : 0f,
+                        saved = true,
+                        valueType = VRCExpressionParameters.ValueType.Bool
+                    };
+                }
+            }
+            else if (param.valueType != VRCExpressionParameters.ValueType.Bool)
+            {
+                EditorGUILayout.HelpBox($"Expression Parameter exists but it is not a Bool (currently: {param.valueType})", MessageType.Error);
+                if (GUILayout.Button("Fix: Change Expression Parameter Type to Bool"))
+                {
+                    param.valueType = VRCExpressionParameters.ValueType.Bool;
+                    param.defaultValue = @group.hintEnabled ? 1f : 0f;
+                }
+            }
+            else if (param.defaultValue != (@group.hintEnabled ? 1f : 0f))
+            {
+                EditorGUILayout.HelpBox($"Expression Parameter default value is not the same", MessageType.Warning);
+                if (GUILayout.Button("Fix: Change Expression Parameter Default Value"))
+                {
+                    param.defaultValue = @group.hintEnabled ? 1f : 0f;
+                }
+            }
         }
 
         private Just1Int7TogglesCompiler AsCompiler()
@@ -157,33 +226,46 @@ Please uncheck ""Enable complex generator"".", MessageType.Error);
                     compiler.customEmptyClip,
                     new TogglesManifest(
                         compiler.avatar.gameObject,
-                        compiler.togglables,
-                        compiler.enableds
-                    ),
-                    compiler.alsoGenerateLayerB
+                        compiler.GetComponents<JustHaiToggleGroup>()
+                    )
             ).DoOverwriteCommonLogic();
         }
-        
-        private void TogglablesListElement(int itemIndex, Rect rect, int index, bool isActive, bool isFocused)
-        {        
-            var element = togglablesReorderableList[itemIndex].serializedProperty.GetArrayElementAtIndex(index);
 
-            EditorGUI.PropertyField(
-                new Rect(rect.x, rect.y, rect.width - 100, EditorGUIUtility.singleLineHeight), 
-                element.FindPropertyRelative("item"),
-                GUIContent.none
-            ); 
-
-            EditorGUI.PropertyField(
-                new Rect(rect.x + rect.width - 100, rect.y, 80, EditorGUIUtility.singleLineHeight),
-                element.FindPropertyRelative("initialState"),
-                GUIContent.none
-            );   
+        private bool IsLegacy()
+        {
+            return !((Just1Int7TogglesCompiler)target).convertedToInventorySystem && ((Just1Int7TogglesCompiler)target).togglables != null && ((Just1Int7TogglesCompiler)target).togglables.Length > 0;
         }
 
-        private static void TogglablesListHeader(int index, Rect rect)
+        private void Convert()
         {
-            EditorGUI.LabelField(rect, "Togglables (J1I7T_" + (index < 7 ? "A" : "B") + "_" + (index < 7 ? index : index - 7) + ")");
+            if (!IsLegacy()) return;
+
+            var compiler = (Just1Int7TogglesCompiler) serializedObject.targetObject;
+
+            for (var index = 0; index < compiler.togglables.Length; index++)
+            {
+                var togglableContainer = compiler.togglables[index];
+                var enabled = compiler.enableds[index];
+                var items = togglableContainer.values;
+                if (items.Count > 0)
+                {
+                    var jhtg = CreateNewToggleGroup();
+                    jhtg.hintEnabled = enabled;
+                    jhtg.togglables = items.Select(togglable => new TogglableItemV2
+                    {
+                        item = togglable.item,
+                        initialState = togglable.initialState == J1I7TToggleableInitialState.Normal ? ToggleableInitialStateV2.Normal : ToggleableInitialStateV2.Inverse,
+                    }).ToList();
+                }
+            }
+
+            compiler.togglables = new TogglableContainer[0];
+            compiler.convertedToInventorySystem = true;
+        }
+
+        private JustHaiToggleGroup CreateNewToggleGroup()
+        {
+            return ((Just1Int7TogglesCompiler) serializedObject.targetObject).gameObject.AddComponent<JustHaiToggleGroup>();
         }
     }
 }
