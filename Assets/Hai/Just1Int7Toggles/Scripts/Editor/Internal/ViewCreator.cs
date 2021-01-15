@@ -7,7 +7,6 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using static Hai.Just1Int7Toggles.Scripts.Editor.Internal.J1I7TParameters;
-using static Hai.Just1Int7Toggles.Scripts.Editor.Internal.Reused.AV3Parameterists;
 
 namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
 {
@@ -30,61 +29,12 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
                 .WithEntryPosition(0, -3)
                 .WithExitPosition(0, -5);
             var init = machinist.NewState("Init", 0, -2);
-            var local = machinist.NewState("Local SetSyncValue", -1, -1);
-            var remote = machinist.NewState("Remote DirtyCheck", 1, -1);
             var blend = machinist.NewState("Blend", 0, 0)
                 .WithAnimation(CreateBlendTree())
                 .WithWriteDefaultsSetTo(true) // FIXME: Why do I have to do this for the system to work?
                 .Drives(AlwaysOneParameterist, 1f);
 
-            {
-                var defaultStageValue = Just1Int7TogglesCompilerInternal.LayerASignalThreshold;
-                for (var exponent = 0; exponent < Just1Int7TogglesCompilerInternal.ExponentCountForLayerA; exponent++)
-                {
-                    var itemNumber = exponent + 1;
-                    var enabled = _manifest.GetEntry(itemNumber).Enabled;
-                    defaultStageValue += enabled ? (int)Math.Pow(2, exponent) : 0;
-
-                    local.Drives(BitAsInt(BitLayer.A, exponent), enabled ? 1 : 0);
-                    local.Drives(BitAsFloat(BitLayer.A, exponent), enabled ? 1f : 0f);
-                }
-                local.Drives(MainParameterist, defaultStageValue);
-                remote.Drives(DirtyCheckParameterist, 1);
-            }
-
-            if (_alsoGenerateLayerB)
-            {
-                var defaultStageValue = 0;
-                for (var exponent = 0; exponent < 8; exponent++)
-                {
-                    var itemNumber = exponent + 8;
-                    var enabled = _manifest.GetEntry(itemNumber).Enabled;
-                    defaultStageValue += enabled ? (int)Math.Pow(2, exponent) : 0;
-
-                    local.Drives(BitAsInt(BitLayer.B, exponent), enabled ? 1 : 0);
-                    local.Drives(BitAsFloat(BitLayer.B, exponent), enabled ? 1f : 0f);
-                }
-                local.Drives(SecondaryOfBParameterist, defaultStageValue);
-                remote.Drives(DirtyCheckOfBParameterist, 1);
-            }
-
-            init.TransitionsTo(local).Whenever(ItIsLocal());
-            init.TransitionsTo(remote)
-                .Whenever(ItIsRemote())
-                .And(MainParameterist).IsGreaterThan(Just1Int7TogglesCompilerInternal.LayerASignalThreshold - 1); // Wait until synchronization
-            local.AutomaticallyMovesTo(blend);
-
-            if (_alsoGenerateLayerB)
-            {
-                remote.TransitionsTo(blend)
-                    .When(DirtyCheckParameterist).IsEqualTo(0)
-                    .And(DirtyCheckOfBParameterist).IsEqualTo(0);
-            }
-            else
-            {
-                remote.TransitionsTo(blend)
-                    .When(DirtyCheckParameterist).IsEqualTo(0);
-            }
+            init.AutomaticallyMovesTo(blend);
         }
 
         private Motion CreateBlendTree()
