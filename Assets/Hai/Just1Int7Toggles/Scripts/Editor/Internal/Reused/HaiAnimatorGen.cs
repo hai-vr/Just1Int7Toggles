@@ -50,7 +50,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal.Reused
             {
                 _animatorController.RemoveLayer(originalIndexToPreserveOrdering);
             }
-            
+
             AddLayerWithWeight(layerName, weightWhenCreating);
             if (originalIndexToPreserveOrdering != -1)
             {
@@ -78,7 +78,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal.Reused
         {
             // This function is a replication of AnimatorController::AddLayer(string) behavior, in order to change the weight.
             // For some reason I cannot find how to change the layer weight after it has been created.
-        
+
             var newLayer = new AnimatorControllerLayer();
             newLayer.name = _animatorController.MakeUniqueLayerName(layerName);
             newLayer.stateMachine = new AnimatorStateMachine();
@@ -97,6 +97,15 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal.Reused
         internal static Vector3 GridPosition(float x, float y)
         {
             return new Vector3(x * 200 , y * 70, 0);
+        }
+
+        public void RemoveLayerIfExists(string layerNameToDelete)
+        {
+            var originalIndexToPreserveOrdering = _animatorController.layers.ToList().FindIndex(layer1 => layer1.name == layerNameToDelete);
+            if (originalIndexToPreserveOrdering != -1)
+            {
+                _animatorController.RemoveLayer(originalIndexToPreserveOrdering);
+            }
         }
     }
 }
