@@ -10,7 +10,7 @@ This update makes J1I7T redundant. For this reason, this project will no longer 
 ### Convert existing J1I7T Avatars 3.0 to Native Avatars 3.0
 
 If your avatar still uses an old version of J1I7T, a conversion tool is planned for release soon
-which will allows you to quickly get rid of J1I7T in order to replace it with VRChat's native synced booleans.
+which will allow you to quickly get rid of J1I7T in order to replace it with VRChat's native synced booleans.
 
 This conversion tool should only be used in projects that already have J1I7T avatars.
 
