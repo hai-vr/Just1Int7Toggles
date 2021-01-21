@@ -13,35 +13,19 @@ MonoBehaviour:
   m_Name: Parameters_1-7
   m_EditorClassIdentifier: 
   parameters:
-  - name: 
-    valueType: 0
-  - name: 
-    valueType: 1
-  - name: 
-    valueType: 1
-  - name: J1I7T_A_Sync
-    valueType: 0
-  - name: 
-    valueType: 0
-  - name: 
-    valueType: 0
-  - name: 
-    valueType: 0
-  - name: 
-    valueType: 0
-  - name: 
-    valueType: 0
-  - name: 
-    valueType: 0
-  - name: 
-    valueType: 0
-  - name: 
-    valueType: 0
-  - name: 
-    valueType: 0
-  - name: 
-    valueType: 0
-  - name: 
-    valueType: 0
-  - name: 
-    valueType: 0
+  - name: A
+    valueType: 2
+    saved: 1
+    defaultValue: 1
+  - name: B
+    valueType: 2
+    saved: 1
+    defaultValue: 0
+  - name: C
+    valueType: 2
+    saved: 1
+    defaultValue: 1
+  - name: D
+    valueType: 2
+    saved: 1
+    defaultValue: 0

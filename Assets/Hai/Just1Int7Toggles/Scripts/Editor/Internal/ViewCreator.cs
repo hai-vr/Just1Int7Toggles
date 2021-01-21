@@ -26,80 +26,87 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
             var machinist = _animatorGenerator.CreateOrRemakeLayerAtSameIndex("Hai_J1I7T_View", 1f)
                 .WithEntryPosition(0, -3)
                 .WithExitPosition(0, -5);
-            var init = machinist.NewState("Init", 0, -2);
-            var blend = machinist.NewState("Blend", 0, 0)
-                .WithAnimation(CreateBlendTree())
-                // .WithWriteDefaultsSetTo(true) // FIXME: Why do I have to do this for the system to work?
-                .Drives(AlwaysOneParameterist, 1f);
+            var init = machinist.NewState("Init", 1, -2)
+                .Drives(InitializedParameterist, false);
+            var waiting = machinist.NewState("Waiting", 0, 0)
+                .Drives(InitializedParameterist, true);
 
-            init.AutomaticallyMovesTo(blend);
-        }
-
-        private Motion CreateBlendTree()
-        {
             var assetContainer_Base = new AnimatorController();
             var assetContainer = new AssetContainerist(assetContainer_Base)
                 .GenerateAssetFileIn("", "GeneratedJ1I7T__", "");
 
-            var childMotions = new List<ChildMotion>();
+            int height = 0;
+            Statist previousOn = init;
+            Statist previousOff = null;
             foreach (var group in _manifest.Groups)
             {
-                GenerateItemTree(group, assetContainer, assetContainer_Base, childMotions);
+                var groupParam = new BoolParameterist(group.parameterName);
+                var internalParam = new BoolParameterist("JHTIS_T_" + group.parameterName);
+                var itemName = group.parameterName;
+
+                _animatorGenerator.CreateParamsAsNeeded(groupParam, internalParam);
+
+                if (group.togglables.Count != 0)
+                {
+                    Dictionary<string, ToggleableInitialStateV2> subgroup = group.togglables
+                        .Where(togglable => togglable.item != null)
+                        .GroupBy(togglable => ResolveRelativePath(_manifest.Avatar.transform, togglable.item.transform))
+                        .ToDictionary(items => items.Key, items => items.First().initialState);
+
+                    if (subgroup.Count != 0)
+                    {
+                        var clipForOn = CreateClipToEnable(itemName, subgroup);
+                        var clipForOff = CreateClipToDisable(itemName, subgroup);
+
+                        var off = machinist.NewState($"{itemName} OFF", 2, height)
+                            .WithAnimation(clipForOff.Expose())
+                            .Drives(internalParam, false);
+                        var on = machinist.NewState($"{itemName} ON", 3, height)
+                            .WithAnimation(clipForOn.Expose())
+                            .Drives(internalParam, true);
+
+                        waiting.TransitionsTo(off).WithExitTimeTo(1f)
+                            .When(groupParam).IsFalse()
+                            .And(internalParam).IsTrue();
+                        waiting.TransitionsTo(on).WithExitTimeTo(1f)
+                            .When(groupParam).IsTrue()
+                            .And(internalParam).IsFalse();
+
+                        off.TransitionsTo(waiting).WithExitTimeTo(1f)
+                            .When(InitializedParameterist).IsTrue();
+                        on.TransitionsTo(waiting).WithExitTimeTo(1f)
+                            .When(InitializedParameterist).IsTrue();
+
+                        previousOn.TransitionsTo(off).WithExitTimeTo(1f)
+                            .When(InitializedParameterist).IsFalse()
+                            .And(groupParam).IsFalse();
+                        previousOn.TransitionsTo(on).WithExitTimeTo(1f)
+                            .When(InitializedParameterist).IsFalse()
+                            .And(groupParam).IsTrue();
+
+                        previousOff?.TransitionsTo(off).WithExitTimeTo(1f)
+                            .When(InitializedParameterist).IsFalse()
+                            .And(groupParam).IsFalse();
+                        previousOff?.TransitionsTo(on).WithExitTimeTo(1f)
+                            .When(InitializedParameterist).IsFalse()
+                            .And(groupParam).IsTrue();
+
+                        previousOff = off;
+                        previousOn = on;
+
+                        assetContainer.Include(clipForOn);
+                        assetContainer.Include(clipForOff);
+
+                        height++;
+                    }
+                }
             }
 
-            var blendTree = new BlendTree
-            {
-                name = "autoBT_ALL",
-                blendType = BlendTreeType.Direct,
-                children = childMotions.ToArray()
-            };
-            AssetDatabase.AddObjectToAsset(blendTree, assetContainer_Base);
+            previousOn.AutomaticallyMovesTo(waiting);
+            previousOff?.AutomaticallyMovesTo(waiting);
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-
-            return blendTree;
-        }
-
-        private void GenerateItemTree(JustHaiToggleGroup container, AssetContainerist assetContainer,
-            AnimatorController assetContainerBase,
-            List<ChildMotion> childMotions)
-        {
-            var itemName = container.parameterName;
-
-            if (container.togglables.Count == 0) return;
-
-            Dictionary<string, ToggleableInitialStateV2> group = container.togglables
-                .Where(togglable => togglable.item != null)
-                .GroupBy(togglable => ResolveRelativePath(_manifest.Avatar.transform, togglable.item.transform))
-                .ToDictionary(items => items.Key, items => items.First().initialState);
-
-            if (group.Count == 0) return;
-
-            var clipForOn = CreateClipToEnable(itemName, group);
-            var clipForOff = CreateClipToDisable(itemName, group);
-
-            assetContainer.Include(clipForOn);
-            assetContainer.Include(clipForOff);
-
-            var subTree = new BlendTree
-            {
-                name = "autoBT_Item" + itemName,
-                blendParameter = container.parameterName + "_F",
-                minThreshold = 0,
-                maxThreshold = 1,
-                blendType = BlendTreeType.Simple1D,
-                children = new[]
-                {
-                    new ChildMotion {motion = clipForOff.Expose(), threshold = 0},
-                    new ChildMotion {motion = clipForOn.Expose(), threshold = 1}
-                }
-            };
-
-            AssetDatabase.AddObjectToAsset(subTree, assetContainerBase);
-
-            childMotions.Add(new ChildMotion
-                {motion = subTree, timeScale = 1, directBlendParameter = AlwaysOneParameterist.Name});
         }
 
         private static Motionist CreateClipToDisable(string itemName, Dictionary<string, ToggleableInitialStateV2> relativePaths)

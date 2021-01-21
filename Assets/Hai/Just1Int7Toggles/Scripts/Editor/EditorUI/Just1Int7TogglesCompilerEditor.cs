@@ -3,6 +3,7 @@ using Hai.Just1Int7Toggles.Scripts.Components;
 using Hai.Just1Int7Toggles.Scripts.Editor.Internal;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Experimental.PlayerLoop;
 using VRC.SDK3.Avatars.ScriptableObjects;
 
 namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
@@ -144,6 +145,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
                     expressionParameters.parameters = expressionParameters.parameters
                         .Where(parameter => parameter.name != "")
                         .ToArray();
+                    ForceSaveAsset(expressionParameters);
                 }
             }
         }
@@ -171,6 +173,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
                         .Where(parameter => parameter.name != "J1I7T_A_Sync")
                         .Where(parameter => parameter.name != "J1I7T_B_Sync")
                         .ToArray();
+                    ForceSaveAsset(expressionParameters);
                 }
             }
         }
@@ -192,6 +195,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
                         saved = true,
                         valueType = VRCExpressionParameters.ValueType.Bool
                     };
+                    ForceSaveAsset(expressionParameters);
                 }
             }
             else if (param.valueType != VRCExpressionParameters.ValueType.Bool)
@@ -201,6 +205,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
                 {
                     param.valueType = VRCExpressionParameters.ValueType.Bool;
                     param.defaultValue = @group.hintEnabled ? 1f : 0f;
+                    ForceSaveAsset(expressionParameters);
                 }
             }
             else if (param.defaultValue != (@group.hintEnabled ? 1f : 0f))
@@ -209,8 +214,15 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.EditorUI
                 if (GUILayout.Button("Fix: Change Expression Parameter Default Value"))
                 {
                     param.defaultValue = @group.hintEnabled ? 1f : 0f;
+                    ForceSaveAsset(expressionParameters);
                 }
             }
+        }
+
+        private static void ForceSaveAsset(VRCExpressionParameters expressionParameters)
+        {
+            var assetPath = AssetDatabase.GetAssetPath(expressionParameters);
+            AssetDatabase.ForceReserializeAssets(new []{assetPath});
         }
 
         private Just1Int7TogglesCompiler AsCompiler()

@@ -17,7 +17,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal.Reused
             _machine = machine;
             _emptyClip = emptyClip;
         }
-        
+
         internal Machinist WithEntryPosition(int x, int y)
         {
             _machine.entryPosition = AnimatorGenerator.GridPosition(x, y);
@@ -41,7 +41,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal.Reused
             var state = _machine.AddState(name, AnimatorGenerator.GridPosition(x, y));
             state.motion = _emptyClip;
             state.writeDefaultValues = false;
-            
+
             return new Statist(state);
         }
 
@@ -67,7 +67,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal.Reused
             _state.motion = clip;
             return this;
         }
-        
+
         internal Transitionist TransitionsTo(Statist destination)
         {
             return new Transitionist(NewDefaultTransition(_state.AddTransition(destination._state)));
@@ -79,7 +79,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal.Reused
             transition.hasExitTime = true;
             return this;
         }
-        
+
         internal Transitionist Exits()
         {
             return new Transitionist(NewDefaultTransition(_state.AddExitTransition()));
@@ -104,6 +104,16 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal.Reused
             _driver.parameters.Add(new VRC_AvatarParameterDriver.Parameter
             {
                 name = parameterist.Name, value = value
+            });
+            return this;
+        }
+
+        internal Statist Drives(BoolParameterist parameterist, bool value)
+        {
+            CreateDriverBehaviorIfNotExists();
+            _driver.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+            {
+                name = parameterist.Name, value = value ? 1 : 0
             });
             return this;
         }
@@ -216,6 +226,13 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal.Reused
             _transition = transition;
         }
 
+        internal Transitionist WithExitTimeTo(float value)
+        {
+            _transition.hasExitTime = true;
+            _transition.exitTime = value;
+            return this;
+        }
+
         internal BuildingIntTransitionist When(IntParameterist parameter)
         {
             return new BuildingIntTransitionist(new TransitionContinuationist(_transition), _transition, parameter);
@@ -237,7 +254,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal.Reused
             action(transitionContinuationist);
             return transitionContinuationist;
         }
-        
+
         internal TransitionContinuationist Whenever()
         {
             return new TransitionContinuationist(_transition);
@@ -266,7 +283,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal.Reused
             {
                 return new BuildingBoolTransitionist(this, _transition, parameter);
             }
-            
+
             internal TransitionContinuationist AndWhenever(Action<TransitionContinuationist> action)
             {
                 action(this);

@@ -13,7 +13,6 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
         private readonly AnimatorGenerator _animatorGenerator;
         private readonly StatefulEmptyClipProvider _emptyClipProvider;
         private readonly ViewCreator _viewCreator;
-        private readonly CasterCreator _casterCreator;
 
         public Just1Int7TogglesCompilerInternal(RuntimeAnimatorController animatorController,
             AnimationClip customEmptyClip, TogglesManifest manifest)
@@ -21,7 +20,6 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
             _emptyClipProvider = new StatefulEmptyClipProvider(new ClipGenerator(customEmptyClip, EmptyClipPath, PluginFolderName));
             _animatorGenerator = new AnimatorGenerator((AnimatorController) animatorController, _emptyClipProvider);
             _viewCreator = new ViewCreator(_animatorGenerator, manifest);
-            _casterCreator = new CasterCreator(_animatorGenerator, manifest);
         }
 
         public void DoOverwriteCommonLogic()
@@ -33,7 +31,6 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
             _animatorGenerator.RemoveLayerIfExists("Hai_J1I7T_Controller");
             _animatorGenerator.RemoveLayerIfExists("Hai_J1I7T_TransmitA");
             _animatorGenerator.RemoveLayerIfExists("Hai_J1I7T_TransmitB");
-            CreateOrReplaceCaster();
             CreateOrReplaceView();
         }
 
@@ -50,11 +47,6 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
             );
         }
 
-        private void CreateOrReplaceCaster()
-        {
-            _casterCreator.CreateOrReplaceCaster();
-        }
-
         private void CreateOrReplaceView()
         {
             _viewCreator.CreateOrReplaceView();
@@ -62,7 +54,7 @@ namespace Hai.Just1Int7Toggles.Scripts.Editor.Internal
 
         private void CreateParameters()
         {
-            _animatorGenerator.CreateParamsAsNeeded(AlwaysOneParameterist);
+            _animatorGenerator.CreateParamsAsNeeded(InitializedParameterist);
         }
     }
 }
